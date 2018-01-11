@@ -11,10 +11,11 @@
       <select name="posts">
         <?php print $postOptions; ?>
       </select>
+      Or
       <select name="pages">
         <?php print $pageOptions; ?>
       </select>
-      <button id="button" value="form-select">Select</button>
+      <button id="form-select-button" value="form-select">Select</button>
     </div>
 
 

@@ -11,8 +11,8 @@ $posts      = get_posts();
 $pages      = get_pages();
 
 
-$postOptions = '<option value=0> -- Choose -- </option>';
-$pageOptions = '<option value=0> -- Choose -- </option>';
+$postOptions = '<option value=0> -- Choose Post -- </option>';
+$pageOptions = '<option value=0> -- Choose Page -- </option>';
 
 
 // $postArray = array();
