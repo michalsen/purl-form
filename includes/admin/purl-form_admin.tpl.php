@@ -8,22 +8,34 @@
 
     <div id="Webforms">
       Select Post or Page that has the webfrom you would like shared<br>
-      <select name="posts">
+      <select name="posts" id="post">
         <?php print $postOptions; ?>
       </select>
       Or
-      <select name="pages">
+      <select name="pages" id="page">
         <?php print $pageOptions; ?>
       </select>
+      <br>
+
+      Quote: <input type="text" name="quote" id="quote"><br>
+      Client: <input type="text" name="client" id="client"><br>
+
       <button id="form-select-button" value="form-select">Select</button>
     </div>
 
 
     <div id="right">
       <h3>Purl List</h3>
-      <div class="query_result">
+      <div class="static_table">
 
       </div>
+<!--       <div class="query_result">
+
+      </div> -->
+      <div class="data_table">
+        <div id="forTable"></div>
+      </div>
+
     </div>
 
 

@@ -14,14 +14,21 @@ class PurlForm_Admin {
    *
    */
   public function __construct() {
-    add_action('admin_menu', array( $this, 'admin_menu'));
+    add_action('admin_menu', array($this, 'admin_menu'));
+    add_action('admin_init', array($this, 'admin_scripts_style'));
   }
 
   /**
    *
    */
   public function admin_scripts_style() {
-
+   if (isset($_REQUEST['page'])) {
+     if ($_REQUEST['page'] == "purl-form") {
+        wp_enqueue_script('jquery');
+        wp_enqueue_script('purlformJS',  plugins_url() . "/purl-form/assets/js/purl-form.js" );
+        wp_enqueue_script('datatables, //cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js');
+      }
+    }
   }
 
   /**
@@ -36,7 +43,7 @@ class PurlForm_Admin {
    */
   function wp_purlform_admin_init() {
     if(is_admin()){
-
+       add_action( 'wp_ajax_my_action', 'purlform_action' );
     }
   }
 
@@ -47,7 +54,6 @@ class PurlForm_Admin {
     include('functions.php');
     include('purl-form_admin.tpl.php');
   }
-
 
 }
 
