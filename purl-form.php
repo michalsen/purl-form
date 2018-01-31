@@ -29,7 +29,21 @@ if ( ! defined( 'ABSPATH' ) ) {
   exit; // Exit if accessed directly
 }
 
+// add_filter('template_redirect', 'purl_override' );
 
+// function purl_override() {
+//     global $wp_query;
+//     print '<br><br><br><br>';
+//     $check = check_purl(preg_replace('#/#', '', $_SERVER['REDIRECT_URL']));
+//     print $check[0]->page . '<br>';
+//     print $check[0]->post . '<br>';
+//     print $check[0]->quote . '<br>';
+
+//     if ('test') {
+//         status_header( 200 );
+//         $wp_query->is_404=TRUE;
+//     }
+// }
 
 if(admin){
   include_once( 'includes/admin/class-purl-form_admin.php' );
@@ -38,7 +52,20 @@ if(admin){
 register_activation_hook( __FILE__, 'purlform_create_db' );
 
 add_action('wp_ajax_purlform_insert', 'purlform_insert');
+add_action('wp_ajax_purlform_remove', 'purlform_remove');
 add_action('wp_ajax_purlform_table', 'purlform_table');
+
+
+
+function check_purl($purl) {
+  global $wpdb;
+  $table = $wpdb->prefix . 'purlform';
+
+  $query = 'SELECT page, post, quote FROM ' . $table . ' WHERE link = "' . $purl . '"';
+  $result = $wpdb->get_results($query, OBJECT);
+
+  return $result;
+}
 
 
 
@@ -62,28 +89,55 @@ function purlform_create_db() {
 }
 
 
+// REMOVE PURL
+function purlform_remove(){
+    if ($_REQUEST['action'] == 'purlform_remove') {
+      global $wpdb;
+      $table = $wpdb->prefix . "purlform";
+      $wpdb->delete(
+            $table,
+            array(
+                'id'   => $_REQUEST['data'][0]
+            )
+        );
+    }
+  print printTable();
+  die();
+  return true;
+}
+
+
 // INSERT FORM SUBMISSION
 function purlform_insert(){
   global $wpdb;
-
     $table = $wpdb->prefix . "purlform";
-
-    if (isset($_REQUEST['data'][2])) {
-      $wpdb->insert(
+    if ($_REQUEST['action'] == 'purlform_insert') {
+      if ($_REQUEST['data'][1] <> NULL &&
+          $_REQUEST['data'][0] <> NULL) {
+        $hash = $_REQUEST['data'][1] . $_REQUEST['data'][2];
+        $wpdb->insert(
             $table,
             array(
                 'page'   => $_REQUEST['data'][1],
                 'post'   => $_REQUEST['data'][0],
                 'quote'  => $_REQUEST['data'][2],
                 'client' => $_REQUEST['data'][3],
-                'link'   => substr(md5($_REQUEST['data'][2]), 5, 8)
+                'link'   => substr(md5($hash), 5, 8)
             )
         );
+      }
     }
+  print printTable();
+  die();
+  return true;
+}
 
+
+function printTable() {
+  global $wpdb;
+  $table = $wpdb->prefix . "purlform";
   $query = 'SELECT * FROM ' . $table;
   $result = $wpdb->get_results($query, OBJECT);
-
   $returnData = [];
   foreach ($result as $rows) {
     $returnData[] = [
@@ -94,59 +148,7 @@ function purlform_insert(){
                    $rows->client,
                    site_url() . '/' . $rows->link];
        }
-
-  print json_encode($returnData);
-  die();
-  return true;
+  return json_encode($returnData);
 }
 
-
-
-// PAINT SUBMISSION TABLE
-// function purlform_table(){
-
-//   global $wpdb;
-
-//   $table = $wpdb->prefix . "purlform";
-//   $query = 'SELECT * FROM ' . $table;
-//   $result = $wpdb->get_results($query, OBJECT);
-
-//   $dataTable = '<table id="static_table">';
-//   $dataTable .= '<tr>';
-//   $dataTable .= '<th>Remove</th>';
-//   $dataTable .= '<th>Post</th>';
-//   $dataTable .= '<th>Page</th>';
-//   $dataTable .= '<th>Quote</th>';
-//   $dataTable .= '<th>Client</th>';
-//   $dataTable .= '<th>Link</th>';
-//   $dataTable .= '</tr>';
-
-//   foreach ($result as $rows) {
-//     $data = [];
-//     $data['page'] = get_the_title($rows->page);
-//     $data['post'] = get_the_title($rows->post);
-
-//     $dataTable .= '<tr>';
-//     $dataTable .= '<td>';
-//     $dataTable .= $rows->id;
-//     $dataTable .= '</td><td>';
-//     $dataTable .= ($rows->post > 0 ? $data['post'] : NULL);
-//     $dataTable .= '</td><td>';
-//     $dataTable .= ($rows->page > 0 ? $data['page'] : NULL);
-//     $dataTable .= '</td><td>';
-//     $dataTable .= $rows->quote;
-//     $dataTable .= '</td><td>';
-//     $dataTable .= $rows->client;
-//     $dataTable .= '</td>';
-//     $dataTable .= '</td><td>';
-//     $dataTable .= site_url() . '/' . $rows->link;
-//     $dataTable .= '</td>';
-//     $dataTable .= '</tr>';
-//   }
-//   $dataTable .= '</table>';
-
-//   print $dataTable;
-//   die();
-//   return true;
-// }
 
