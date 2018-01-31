@@ -29,21 +29,23 @@ if ( ! defined( 'ABSPATH' ) ) {
   exit; // Exit if accessed directly
 }
 
-// add_filter('template_redirect', 'purl_override' );
+add_filter('template_redirect', 'purl_override' );
 
-// function purl_override() {
-//     global $wp_query;
-//     print '<br><br><br><br>';
-//     $check = check_purl(preg_replace('#/#', '', $_SERVER['REDIRECT_URL']));
-//     print $check[0]->page . '<br>';
-//     print $check[0]->post . '<br>';
-//     print $check[0]->quote . '<br>';
-
-//     if ('test') {
-//         status_header( 200 );
-//         $wp_query->is_404=TRUE;
-//     }
-// }
+function purl_override() {
+    global $wp_query;
+    $check = check_purl(preg_replace('#/#', '', $_SERVER['REDIRECT_URL']));
+    if (is_array($check)) {
+      if ($check[0]->page > 0) {
+        $page = get_page($check[0]->page);
+        $url = $page->guid;
+      }
+      if ($check[0]->post > 0) {
+        $post = get_page($check[0]->post);
+        $url = $post->guid;
+      }
+      wp_redirect($url . '?quote=' . $check[0]->quote);
+    }
+}
 
 if(admin){
   include_once( 'includes/admin/class-purl-form_admin.php' );
