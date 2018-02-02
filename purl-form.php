@@ -32,6 +32,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_filter('template_redirect', 'purl_override' );
 
 function purl_override() {
+
+  // Check if quote is real
+  if (isset($_REQUEST['quote'])) {
+    $checkQuote = checkQuote($_REQUEST['quote']);
+    if (count($checkQuote)< 1) {
+      global $wp_query;
+      $wp_query->set_404();
+      status_header( 404 );
+      get_template_part( 404 );
+      exit();
+    }
+  }
+
+
   if (is_404()) {
     global $wp_query;
     $check = check_purl(preg_replace('#/#', '', $_SERVER['REDIRECT_URL']));
@@ -62,6 +76,15 @@ add_action('wp_ajax_purlform_insert', 'purlform_insert');
 add_action('wp_ajax_purlform_remove', 'purlform_remove');
 add_action('wp_ajax_purlform_table', 'purlform_table');
 
+
+// Check if quote is real
+function checkQuote($quote) {
+ global $wpdb;
+  $table = $wpdb->prefix . "purlform";
+  $query = 'SELECT * FROM ' . $table . ' WHERE quote = "' . $quote . '"';
+  $result = $wpdb->get_results($query, OBJECT);
+  return $result;
+}
 
 
 function check_purl($purl) {
