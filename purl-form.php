@@ -32,6 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_filter('template_redirect', 'purl_override' );
 
 function purl_override() {
+  if (is_404()) {
     global $wp_query;
     $check = check_purl(preg_replace('#/#', '', $_SERVER['REDIRECT_URL']));
     if (is_array($check)) {
@@ -42,9 +43,14 @@ function purl_override() {
       if ($check[0]->post > 0) {
         $post = get_page($check[0]->post);
         $url = $post->guid;
+        wp_redirect($url . '?quote=' . $check[0]->quote);
       }
-      wp_redirect($url . '?quote=' . $check[0]->quote);
+       else {
+        get_template_part( 404 );
+        exit();
+       }
     }
+  }
 }
 
 if(admin){
