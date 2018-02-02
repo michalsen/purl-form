@@ -39,12 +39,8 @@ function purl_override() {
       if ($check[0]->page > 0) {
         $page = get_page($check[0]->page);
         $url = $page->guid;
-      }
-      if ($check[0]->post > 0) {
-        $post = get_page($check[0]->post);
-        $url = $post->guid;
-        wp_redirect($url . '?quote=' . $check[0]->quote);
-      }
+        wp_redirect('?page_id=' . $page->ID . '&quote=' . $check[0]->quote);
+       }
        else {
          global $wp_query;
          $wp_query->set_404();
