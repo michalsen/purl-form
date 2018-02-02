@@ -32,22 +32,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_filter('template_redirect', 'purl_override' );
 
 function purl_override() {
+  global $wp_query;
 
   // Check if quote is real
   if (isset($_REQUEST['quote'])) {
     $checkQuote = checkQuote($_REQUEST['quote']);
-    if (count($checkQuote)< 1) {
-      global $wp_query;
-      $wp_query->set_404();
-      status_header( 404 );
-      get_template_part( 404 );
-      exit();
+    if (count($checkQuote) < 1) {
+      redirect();
     }
   }
 
-
+  // Gets a little tricky here
+  // First we have to see if the PURL is a valid PURL
+  // And then check if the quote is real
+  // If both quote and page are valid, then push on
+  // If not, 404
   if (is_404()) {
-    global $wp_query;
     $check = check_purl(preg_replace('#/#', '', $_SERVER['REDIRECT_URL']));
     if (is_array($check)) {
       if ($check[0]->page > 0) {
@@ -56,14 +56,20 @@ function purl_override() {
         wp_redirect('?page_id=' . $page->ID . '&quote=' . $check[0]->quote);
        }
        else {
-         global $wp_query;
-         $wp_query->set_404();
-         status_header( 404 );
-         get_template_part( 404 );
+         redirect();
          exit();
        }
     }
   }
+   else {
+      if (!isset($_REQUEST['quote'])) {
+       $check = checkPagePost($wp_query->queried_object->ID);
+       if ($check == 1) {
+          redirect();
+          exit();
+        }
+      }
+   }
 }
 
 if(admin){
@@ -76,6 +82,32 @@ add_action('wp_ajax_purlform_insert', 'purlform_insert');
 add_action('wp_ajax_purlform_remove', 'purlform_remove');
 add_action('wp_ajax_purlform_table', 'purlform_table');
 
+
+// Redirect to a 404 page
+function redirect() {
+    global $wp_query;
+    $wp_query->set_404();
+    status_header( 404 );
+    get_template_part( 404 );
+    exit();
+}
+
+// Check if page or post has quote form
+function checkPagePost($id) {
+ global $wpdb;
+  $table = $wpdb->prefix . "purlform";
+  $page = 'SELECT COUNT(*) as CNT FROM ' . $table . ' WHERE page = "' . $id . '"';
+  $post = 'SELECT COUNT(*) as CNT FROM ' . $table . ' WHERE post = "' . $id . '"';
+  $pageresult = $wpdb->get_results($page, OBJECT);
+  $postresult = $wpdb->get_results($post, OBJECT);
+  if ($pageresult[0]->CNT > 0 ||
+      $postresult[0]->CNT > 0) {
+    return TRUE;
+  }
+   else {
+    return FALSE;
+  }
+}
 
 // Check if quote is real
 function checkQuote($quote) {
