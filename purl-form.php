@@ -64,6 +64,7 @@ function purl_override() {
    else {
       if (!isset($_REQUEST['quote'])) {
        $check = checkPagePost($wp_query->queried_object->ID);
+       print_r($check);
        if ($check == 1) {
           redirect();
           exit();
@@ -86,6 +87,8 @@ add_action('wp_ajax_purlform_table', 'purlform_table');
 // Redirect to a 404 page
 function redirect() {
     global $wp_query;
+    print_r($wp_query);
+    die();
     $wp_query->set_404();
     status_header( 404 );
     get_template_part( 404 );
